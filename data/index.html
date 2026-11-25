@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>ESP-01S Relay</title>
+
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
+</head>
+
+<body>
+  <header>
+    <div>
+      <h1>ESP-01S Relay</h1>
+      <small>Wi-Fi Relay Controller</small>
+    </div>
+
+    <span id="connection" role="status">연결 확인 중</span>
+  </header>
+
+  <nav aria-label="메뉴">
+    <button data-tab="home" aria-selected="true">대시보드</button>
+    <button data-tab="relay">릴레이</button>
+    <button data-tab="network">네트워크</button>
+    <button data-tab="system">시스템</button>
+  </nav>
+
+  <main>
+    <!-- 대시보드 -->
+    <section id="home">
+      <article class="hero">
+        <small>RELAY CHANNEL 01</small>
+
+        <div id="powerIcon" class="power">⏻</div>
+
+        <h2 id="state">UNKNOWN</h2>
+        <p id="gpio">GPIO0 —</p>
+
+        <div class="actions">
+          <button id="on" disabled>ON</button>
+          <button id="off" class="secondary" disabled>
+            OFF / 정지
+          </button>
+        </div>
+
+        <p id="mode">인칭 모드 —</p>
+
+        <progress id="progress" max="1" value="0"></progress>
+
+        <p id="remaining">—</p>
+      </article>
+
+      <div class="grid">
+        <article>
+          <small>STA 연결</small>
+          <h3 id="staStatus">—</h3>
+          <p id="staIp">—</p>
+        </article>
+
+        <article>
+          <small>AP 연결</small>
+          <h3 id="apStatus">—</h3>
+          <p id="apIp">—</p>
+        </article>
+
+        <article>
+          <small>신호 강도</small>
+          <h3 id="rssi">—</h3>
+        </article>
+
+        <article>
+          <small>가동 시간</small>
+          <h3 id="uptime">—</h3>
+        </article>
+      </div>
+
+      <small id="updated"></small>
+    </section>
+
+    <!-- 릴레이 설정 -->
+    <section id="relay" hidden>
+      <form id="relayForm">
+        <article>
+          <h2>인칭 모드 설정</h2>
+
+          <label class="check">
+            <input type="checkbox" id="inch">
+            인칭 모드 활성화
+          </label>
+
+          <label>
+            유지 시간 (초)
+            <input id="duration" type="number" min="0.1" max="3600" step="0.001" required value="1">
+          </label>
+
+          <label>
+            ON 재수신 정책
+            <select id="trigger">
+              <option value="restart">타이머 재시작</option>
+              <option value="ignore">추가 ON 무시</option>
+            </select>
+          </label>
+
+          <h2>부팅 정책</h2>
+
+          <label>
+            전원 재인가 시 상태
+            <select id="boot">
+              <option>OFF</option>
+              <option>ON</option>
+              <option>RESTORE</option>
+            </select>
+          </label>
+
+          <p id="bootHint" class="muted"></p>
+
+          <div class="actions">
+            <button type="submit">저장</button>
+            <button type="button" class="secondary cancel">
+              취소
+            </button>
+          </div>
+        </article>
+      </form>
+    </section>
+
+    <!-- 네트워크 설정 -->
+    <section id="network" hidden>
+      <form id="networkForm">
+
+        <!-- STA 설정 -->
+        <article>
+          <h2>STA 설정</h2>
+
+          <button type="button" id="scan" class="secondary">
+            Wi-Fi 검색
+          </button>
+
+          <div id="networks"></div>
+
+          <label>
+            SSID
+            <input id="ssid" maxlength="32">
+          </label>
+
+          <label>
+            비밀번호 (빈칸: 기존 유지)
+            <input id="staPass" type="password" maxlength="64" autocomplete="new-password">
+          </label>
+
+          <label class="check">
+            <input id="dhcp" type="checkbox" checked>
+            DHCP 자동 IP
+          </label>
+
+          <div id="staticFields">
+            <label>
+              IP
+              <input id="ip">
+            </label>
+
+            <label>
+              Subnet Mask
+              <input id="subnet">
+            </label>
+
+            <label>
+              Gateway
+              <input id="gateway">
+            </label>
+
+            <label>
+              DNS
+              <input id="dns">
+            </label>
+          </div>
+
+          <label>
+            Hostname
+            <input id="hostname" maxlength="32">
+          </label>
+        </article>
+
+        <!-- AP 설정 -->
+        <article>
+          <h2>AP 설정</h2>
+
+          <label class="check">
+            <input id="apEnabled" type="checkbox" checked>
+            AP 활성화
+          </label>
+
+          <label>
+            AP SSID
+            <input id="apSsid" maxlength="32" required>
+          </label>
+
+          <label>
+            AP 비밀번호 (빈칸: 기존 유지)
+            <input id="apPass" type="password" minlength="8" maxlength="63" autocomplete="new-password">
+          </label>
+
+          <label>
+            AP IP
+            <input id="apAddress" required>
+          </label>
+
+          <label>
+            최대 접속 수
+            <input id="maxClients" type="number" min="1" max="4" required>
+          </label>
+
+          <div class="actions">
+            <button type="submit">저장 및 적용</button>
+            <button type="button" class="secondary cancel">
+              취소
+            </button>
+          </div>
+        </article>
+      </form>
+    </section>
+
+    <!-- 시스템 설정 -->
+    <section id="system" hidden>
+
+      <!-- 시스템 정보 -->
+      <article>
+        <h2>시스템 정보</h2>
+
+        <dl id="info"></dl>
+
+        <label>
+          장치 이름
+          <input id="deviceName" maxlength="32">
+        </label>
+
+        <button id="saveName">이름 저장</button>
+      </article>
+
+      <!-- 시스템 관리 -->
+      <article>
+        <h2>시스템 관리</h2>
+
+        <div class="stack">
+          <button id="backup" class="secondary">
+            설정 백업 (민감정보 제외)
+          </button>
+
+          <label>
+            설정 복원
+            <input id="restoreFile" type="file" accept=".json,application/json">
+          </label>
+
+          <button id="restore" class="secondary">
+            복원 적용
+          </button>
+
+          <button id="reboot" class="secondary">
+            재부팅
+          </button>
+
+          <button id="reset" class="danger">
+            공장 초기화
+          </button>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <!-- 하단 영역 -->
+  <footer>
+    ESP-01S · Local Web Interface
+  </footer>
+
+  <!-- 알림 메시지 -->
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- 작업 확인 대화상자 -->
+  <dialog id="confirm">
+    <h2>작업 확인</h2>
+
+    <p id="confirmText"></p>
+
+    <form method="dialog" class="actions">
+      <button value="cancel" class="secondary">취소</button>
+      <button value="ok">확인</button>
+    </form>
+  </dialog>
+</body>
+
+</html>

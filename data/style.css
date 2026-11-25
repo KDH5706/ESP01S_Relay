@@ -1,0 +1,354 @@
+/* 기본 색상 및 테마 변수 */
+:root {
+  color-scheme: light dark;
+
+  --bg: #f2f5f9;
+  --card: #fff;
+  --text: #17253a;
+  --muted: #63748a;
+  --line: #d9e2ed;
+  --accent: #175bd1;
+  --good: #16804b;
+  --bad: #b42335;
+}
+
+
+/* 기본 스타일 초기화 */
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 system-ui, sans-serif;
+}
+
+
+/* 전체 레이아웃 */
+header,
+nav,
+main,
+footer {
+  max-width: 850px;
+  margin: auto;
+  padding: 16px;
+}
+
+
+/* 상단 헤더 */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+
+/* 제목 및 텍스트 */
+h1 {
+  font-size: 22px;
+  margin: 0;
+}
+
+h2 {
+  font-size: 18px;
+  margin: 0 0 16px;
+}
+
+h3,
+p {
+  margin: 6px 0;
+}
+
+small,
+.muted,
+footer {
+  color: var(--muted);
+}
+
+
+/* 네비게이션 메뉴 */
+nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  padding-top: 0;
+}
+
+
+/* 버튼 및 입력 요소 공통 스타일 */
+button,
+input,
+select {
+  font: inherit;
+  min-height: 44px;
+  border-radius: 9px;
+}
+
+
+/* 기본 버튼 */
+button {
+  border: 1px solid transparent;
+  background: var(--accent);
+  color: white;
+  padding: 9px 12px;
+  cursor: pointer;
+  font-weight: 650;
+}
+
+
+/* 비활성화 버튼 */
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+
+/* 보조 버튼 및 메뉴 버튼 */
+button.secondary,
+nav button {
+  background: var(--card);
+  color: var(--text);
+  border-color: var(--line);
+}
+
+
+/* 선택된 메뉴 버튼 */
+nav button[aria-selected=true] {
+  background: var(--accent);
+  color: white;
+}
+
+
+/* 위험 작업 버튼 */
+button.danger {
+  background: var(--bad);
+}
+
+
+/* 카드 영역 */
+article {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 12px;
+}
+
+
+/* 릴레이 대시보드 */
+.hero {
+  text-align: center;
+}
+
+
+/* 전원 상태 아이콘 */
+.power {
+  font-size: 80px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.power.active {
+  color: var(--good);
+}
+
+
+/* 상태 정보 그리드 */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.grid article {
+  margin: 0;
+}
+
+
+/* 가로 버튼 그룹 */
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.actions>* {
+  flex: 1;
+}
+
+
+/* 세로 요소 그룹 */
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+
+/* 입력 필드 레이블 */
+label {
+  display: grid;
+  gap: 5px;
+  margin: 12px 0;
+  font-weight: 600;
+}
+
+
+/* 입력 필드 및 선택 메뉴 */
+input,
+select {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+}
+
+
+/* 체크박스 영역 */
+.check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+}
+
+.check input {
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+}
+
+
+/* 인칭 모드 진행 표시줄 */
+progress {
+  width: 100%;
+  accent-color: var(--good);
+}
+
+
+/* 시스템 정보 목록 */
+dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+dt {
+  color: var(--muted);
+}
+
+
+/* 장치 연결 상태 */
+#connection {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
+}
+
+#connection.online {
+  color: var(--good);
+}
+
+
+/* 토스트 알림 메시지 */
+#toast {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92%, 600px);
+  background: var(--text);
+  color: var(--card);
+  padding: 14px;
+  border-radius: 10px;
+  z-index: 5;
+}
+
+
+/* 작업 확인 대화상자 */
+dialog {
+  width: min(92%, 440px);
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px;
+}
+
+
+/* 대화상자 배경 */
+dialog::backdrop {
+  background: #0008;
+}
+
+
+/* Wi-Fi 검색 결과 버튼 */
+#networks button {
+  display: block;
+  width: 100%;
+  margin: 6px 0;
+  text-align: left;
+}
+
+
+/* 하단 푸터 */
+footer {
+  text-align: center;
+}
+
+
+/* 키보드 포커스 접근성 */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid #72a5ff;
+  outline-offset: 2px;
+}
+
+
+/* 모바일 반응형 스타일 */
+@media (max-width: 400px) {
+
+  header,
+  nav,
+  main {
+    padding: 10px;
+  }
+
+  nav button {
+    padding: 6px;
+    font-size: 13px;
+  }
+
+  article {
+    padding: 14px;
+  }
+}
+
+
+/* 시스템 다크 모드 대응 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101722;
+    --card: #192433;
+    --text: #e7eef8;
+    --muted: #a7b5c8;
+    --line: #344356;
+    --accent: #2869d8;
+    --good: #62d49a;
+    --bad: #c53c50;
+  }
+}
