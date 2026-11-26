@@ -103,7 +103,7 @@ function disconnected() {
   $('connection').classList.remove('online');
 
   text('state', 'UNKNOWN');
-  text('gpio', 'GPIO0 —');
+  text('gpio', 'GPIO —');
 
   $('powerIcon').classList.remove('active');
 
@@ -145,7 +145,8 @@ function render(s) {
   $('connection').classList.add('online');
 
   text('state', r.state ? 'ON' : 'OFF');
-  text('gpio', 'GPIO0 ' + (r.state ? 'LOW' : 'HIGH'));
+  const gpio = Number.isInteger(r.gpio) ? `GPIO${r.gpio}` : 'GPIO';
+  text('gpio', `${gpio} ${r.state ? 'LOW' : 'HIGH'}`);
 
   $('powerIcon').classList.toggle('active', r.state);
 

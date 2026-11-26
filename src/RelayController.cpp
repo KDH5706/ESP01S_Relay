@@ -1,5 +1,7 @@
 #include "RelayController.h"
 
+static constexpr uint8_t RELAY_PIN = 3;
+
 static bool state = false, running = false, dirty = false;
 static uint32_t started = 0, active = 0, changed = 0;
 
@@ -14,12 +16,12 @@ static void output(bool on) {
         changed = millis();
     }
 
-    digitalWrite(0, on ? LOW : HIGH);
+    digitalWrite(RELAY_PIN, on ? LOW : HIGH);
 }
 
 void relayInit() {
-    digitalWrite(0, HIGH);
-    pinMode(0, OUTPUT);
+    digitalWrite(RELAY_PIN, HIGH);
+    pinMode(RELAY_PIN, OUTPUT);
 }
 
 bool relayIsOn() {
@@ -105,7 +107,7 @@ void relayStatus(JsonObject o) {
     relayUpdate();
 
     o["state"] = state;
-    o["gpio"] = 0;
+    o["gpio"] = RELAY_PIN;
     o["level"] = state ? "LOW" : "HIGH";
 
     auto i = o.createNestedObject("inching");

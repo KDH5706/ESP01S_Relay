@@ -6,6 +6,7 @@
 void setup() {
     relayInit();
 
+    // GPIO3 (UART0 RX) is reserved for the active-low relay output.
     Serial.begin(115200, SERIAL_8N1, SERIAL_TX_ONLY);
 
     loadConfig();
