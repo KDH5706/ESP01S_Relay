@@ -6,7 +6,7 @@
 void setup() {
     relayInit();
 
-    Serial.begin(115200);
+    Serial.begin(115200, SERIAL_8N1, SERIAL_TX_ONLY);
 
     loadConfig();
 
@@ -23,7 +23,7 @@ void setup() {
     webInit();
     relayBoot();
 
-    Serial.println("Ready");
+    //Serial.println("Ready");
 }
 
 void loop() {
