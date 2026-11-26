@@ -1,7 +1,7 @@
 #include "WiFiManager.h"
 
 static bool apOn = false, pending = false, scanning = false;
-static uint32_t applyAt = 0, lastTry = 0;
+static uint32_t applyAt = 0, lastTry = 0, lastApTry = 0;
 
 static String scanCache = "[]";
 static uint32_t scanAt = 0;
@@ -16,6 +16,7 @@ static IPAddress addr(JsonVariantConst v) {
 }
 
 static void apStart() {
+    lastApTry = millis();
     auto a = cfg["wifi"]["ap"];
 
     WiFi.mode(WIFI_AP_STA);
@@ -35,6 +36,10 @@ static void apStart() {
         false,
         a["maxClients"].as<int>()
     );
+}
+
+static bool apRunning() {
+    return apOn && (WiFi.getMode() & WIFI_AP);
 }
 
 void wifiApply() {
@@ -92,24 +97,11 @@ void wifiUpdate() {
         wifiApply();
     }
 
-    bool connected = WiFi.status() == WL_CONNECTED;
-
-    // Disable AP when STA is connected
-    // if (
-    //     !safeMode &&
-    //     !cfg["wifi"]["ap"]["enabled"].as<bool>() &&
-    //     connected &&
-    //     apOn
-    // ) {
-    //     WiFi.softAPdisconnect(true);
-
-    //     apOn = false;
-    // }
-
-    // Restore AP when STA is disconnected
-    if (!connected && !apOn) {
+    if (!apRunning() && millis() - lastApTry >= 1000) {
         apStart();
     }
+
+    bool connected = WiFi.status() == WL_CONNECTED;
 
     // Retry STA connection
     if (
@@ -169,8 +161,9 @@ void wifiStatus(JsonObject o) {
         o["rssi"] = nullptr;
     }
 
-    o["apEnabled"] = apOn;
-    o["apIp"] = apOn ? WiFi.softAPIP().toString() : String("");
+    bool ap = apRunning();
+    o["apEnabled"] = ap;
+    o["apIp"] = ap ? WiFi.softAPIP().toString() : String("");
     o["apClients"] = WiFi.softAPgetStationNum();
 }
 

@@ -25,7 +25,6 @@ void defaults(JsonDocument& d) {
                 "dns": "192.168.0.1"
             },
             "ap": {
-                "enabled": true,
                 "ssid": "",
                 "password": "esp01s-test",
                 "ip": "192.168.4.1",
@@ -105,7 +104,6 @@ bool validate(JsonObjectConst o) {
         !s["dhcp"].is<bool>() ||
         !str(s["ssid"], 0, 32) ||
         !str(s["password"], 0, 63) ||
-        !a["enabled"].is<bool>() ||
         !str(a["ssid"], 1, 32) ||
         !str(a["password"], 8, 63) ||
         !ip(a["ip"]) ||
@@ -120,16 +118,6 @@ bool validate(JsonObjectConst o) {
         if (!ip(s[k])) {
             return false;
         }
-    }
-
-    if (
-        !a["enabled"].as<bool>() &&
-        (
-            !s["enabled"].as<bool>() ||
-            !strlen(s["ssid"].as<const char*>())
-        )
-    ) {
-        return false;
     }
 
     return one(r["bootMode"], "OFF", "ON", "RESTORE") &&
@@ -214,7 +202,13 @@ static bool readConfig(const char* path, JsonDocument& d) {
 
     f.close();
 
-    return !e && validate(d.as<JsonObjectConst>());
+    if (e) {
+        return false;
+    }
+
+    // Ignore the AP switch stored by older firmware.
+    d["wifi"]["ap"].as<JsonObject>().remove("enabled");
+    return validate(d.as<JsonObjectConst>());
 }
 
 bool saveConfig(JsonDocument& d) {

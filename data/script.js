@@ -180,7 +180,7 @@ function render(s) {
 
   text(
     'apStatus',
-    w.apEnabled ? '활성' : '비활성'
+    w.apEnabled ? '활성' : '시작 대기 중'
   );
 
   text('apIp', w.apIp);
@@ -341,7 +341,6 @@ function fill(c) {
   $('hostname').value = d.hostname || '';
 
   // AP 설정
-  $('apEnabled').checked = a.enabled !== false;
   $('apSsid').value = a.ssid || '';
   $('apPass').value = '';
   $('apAddress').value = a.ip || '192.168.4.1';
@@ -400,7 +399,6 @@ const fields = {
     'gateway',
     'dns',
     'hostname',
-    'apEnabled',
     'apSsid',
     'apPass',
     'apAddress',
@@ -626,7 +624,6 @@ $('networkForm').onsubmit = async e => {
   };
 
   const ap = {
-    enabled: $('apEnabled').checked,
     ssid: $('apSsid').value,
     ip: $('apAddress').value,
     maxClients: Number($('maxClients').value)

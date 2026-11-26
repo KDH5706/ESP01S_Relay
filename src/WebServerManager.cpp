@@ -141,6 +141,8 @@ static void putConfig() {
         return;
     }
 
+    // Allow older UI clients and backups to omit or send the former AP switch.
+    p["wifi"]["ap"].as<JsonObject>().remove("enabled");
     next.set(cfg);
 
     if (
