@@ -1,9 +1,5 @@
 #include "Config.h"
 
-extern "C" {
-#include <user_interface.h>
-}
-
 DynamicJsonDocument cfg(JSON_CAP);
 
 bool fsOK = false, safeMode = false;
@@ -31,7 +27,7 @@ void defaults(JsonDocument& d) {
             "ap": {
                 "enabled": true,
                 "ssid": "",
-                "password": "",
+                "password": "esp01s-test",
                 "ip": "192.168.4.1",
                 "maxClients": 4
             }
@@ -47,32 +43,9 @@ void defaults(JsonDocument& d) {
         }
     })");
 
-    d["wifi"]["ap"]["ssid"] =
-        String("ESP01S-") + String(ESP.getChipId(), HEX);
+    d["wifi"]["ap"]["ssid"] = String("ESP01S-") + String(ESP.getChipId(), HEX);
 
-    // Random credentials are printed on the local serial console,
-    // never in HTTP responses.
-    char pass[25];
-
-    snprintf(
-        pass,
-        sizeof(pass),
-        "%08lx%08lx",
-        (unsigned long)os_random(),
-        (unsigned long)os_random()
-    );
-
-    d["wifi"]["ap"]["password"] = pass;
-
-    snprintf(
-        pass,
-        sizeof(pass),
-        "%08lx%08lx",
-        (unsigned long)os_random(),
-        (unsigned long)os_random()
-    );
-
-    d["adminPassword"] = pass;
+    d["adminPassword"] = String("admin");
 }
 
 static bool str(JsonVariantConst v, size_t lo, size_t hi) {
@@ -110,7 +83,7 @@ bool validate(JsonObjectConst o) {
          i = r["inching"];
 
     if (
-        !str(o["adminPassword"], 16, 32) ||
+        !str(o["adminPassword"], 4, 32) ||
         !o["version"].is<int>() ||
         o["version"].as<int>() != 1 ||
         !str(d["name"], 1, 64) ||

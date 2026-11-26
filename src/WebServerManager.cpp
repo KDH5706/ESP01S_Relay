@@ -7,7 +7,6 @@
 static ESP8266WebServer server(80);
 static bool rebootPending = false;
 static uint32_t rebootAt = 0;
-static String adminPass;
 
 static void sendJson(int code, JsonDocument& d) {
     String s;
@@ -28,7 +27,9 @@ static void result(int code, const char* msg) {
 }
 
 static bool auth() {
-    if (server.authenticate("admin", adminPass.c_str())) {
+    const char* password = cfg["adminPassword"].as<const char*>();
+
+    if (password && server.authenticate("admin", password)) {
         return true;
     }
 
@@ -196,6 +197,62 @@ static void putConfig() {
     }
 }
 
+static void changeAdminPassword() {
+    if (!guard(true)) {
+        return;
+    }
+
+    JsonDocument request;
+
+    if (!body(request)) {
+        return;
+    }
+
+    const auto current = request["currentPassword"].as<JsonString>();
+    const auto replacement = request["newPassword"].as<JsonString>();
+
+    if (request.size() != 2 || !current || !current.size() || !replacement) {
+        result(400, "Current and new passwords are required");
+        return;
+    }
+
+    const auto saved = cfg["adminPassword"].as<JsonString>();
+
+    if (current != saved) {
+        result(422, "Current password is incorrect");
+        return;
+    }
+
+    if (replacement.size() < 4 || replacement.size() > 32) {
+        result(400, "New password must be 4 to 32 characters");
+        return;
+    }
+
+    for (size_t i = 0; i < replacement.size(); ++i) {
+        const char c = replacement.c_str()[i];
+        if (c < '!' || c > '~') {
+            result(400, "New password must use printable ASCII without spaces");
+            return;
+        }
+    }
+
+    if (replacement == saved) {
+        result(400, "New password must differ from the current password");
+        return;
+    }
+
+    JsonDocument next;
+
+    if (!next.set(cfg) || !next["adminPassword"].set(replacement) ||
+        next.overflowed() || !saveConfig(next)) {
+        result(500, "Save failed");
+        return;
+    }
+
+    swap(cfg, next);
+    result(200, "Password changed");
+}
+
 static void staticFile(const char* path, const char* mime) {
     if (!auth()) {
         return;
@@ -229,23 +286,18 @@ static void staticFile(const char* path, const char* mime) {
 }
 
 void webInit() {
-    // Independent administrator credential, persisted in private config.
-    adminPass = cfg["adminPassword"].as<String>();
-
     Serial.println("HTTP user: admin");
-    Serial.println("HTTP password: " + adminPass);
+    Serial.println("HTTP password: " + cfg["adminPassword"].as<String>());
     Serial.println(
         "AP password: " +
         cfg["wifi"]["ap"]["password"].as<String>()
     );
 
-    const char* headers[] = {
-        "Origin",
-        "Sec-Fetch-Site",
+    server.collectHeaders(
+        "Origin", 
+        "Sec-Fetch-Site", 
         "Content-Type"
-    };
-
-    server.collectHeaders(headers, 3);
+    );
 
     // Static web files
     server.on("/", HTTP_GET, [] {
@@ -268,6 +320,7 @@ void webInit() {
     server.on("/api/status", HTTP_GET, status);
     server.on("/api/config", HTTP_GET, getConfig);
     server.on("/api/config", HTTP_PUT, putConfig);
+    server.on("/api/system/admin-password", HTTP_PUT, changeAdminPassword);
 
     // Relay API
     server.on("/api/relay", HTTP_GET, [] {

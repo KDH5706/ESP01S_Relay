@@ -95,16 +95,16 @@ void wifiUpdate() {
     bool connected = WiFi.status() == WL_CONNECTED;
 
     // Disable AP when STA is connected
-    if (
-        !safeMode &&
-        !cfg["wifi"]["ap"]["enabled"].as<bool>() &&
-        connected &&
-        apOn
-    ) {
-        WiFi.softAPdisconnect(true);
+    // if (
+    //     !safeMode &&
+    //     !cfg["wifi"]["ap"]["enabled"].as<bool>() &&
+    //     connected &&
+    //     apOn
+    // ) {
+    //     WiFi.softAPdisconnect(true);
 
-        apOn = false;
-    }
+    //     apOn = false;
+    // }
 
     // Restore AP when STA is disconnected
     if (!connected && !apOn) {

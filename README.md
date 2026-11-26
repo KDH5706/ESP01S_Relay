@@ -1,19 +1,27 @@
 # ESP-01S Relay — PlatformIO backend development build
 
-기존 data/ 3개 파일은 변경하지 않았습니다. SRS v1.1의 8개 UI API 및 GET relay/wifi status를 구현한 개발용 소스입니다. 실제 빌드 및 실물 검증 전에는 부하를 연결하지 마십시오.
+SRS v1.1의 UI API, 릴레이 및 Wi-Fi 상태 조회, HTTP 관리자 비밀번호 변경을 구현한 개발용 소스입니다. 실제 빌드 및 실물 검증 전에는 부하를 연결하지 마십시오.
 
 ## 시작
 1. VS Code + PlatformIO에서 이 폴더를 엽니다. 실물 Flash가 1MB인지 확인합니다.
 2. 부하를 분리한 상태에서 `pio run`, `pio run -t upload`, `pio run -t uploadfs`를 실행합니다. uploadfs는 기존 설정을 덮어씁니다.
-3. 정상 부팅 모드로 재시작 후 `pio device monitor` (115200)에서 AP 비밀번호와 HTTP admin 비밀번호를 확인합니다. 초기 AP 이름은 ESP01S-칩ID, 주소는 192.168.4.1입니다.
+
+$pio = "$env:USERPROFILE\.platformio\penv\Scripts\pio.exe" & $pio run -e esp01_1m -t upload --upload-port COM7
+
+& $pio run -e esp01_1m -t uploadfs --upload-port COM7
+
+& $pio device monitor --port COM7 --baud 115200
+
+3. 정상 부팅 모드로 재시작 후 `pio device monitor` (115200)에서 AP 비밀번호와 HTTP admin 비밀번호를 확인합니다. 초기 AP 이름은 ESP01S-칩ID, 주소는 192.168.4.1이며 테스트용 기본 AP 비밀번호는 `esp01s-test`입니다.
 4. AP에 접속하고 http://192.168.4.1/ 을 엽니다. HTTP Basic 인증 사용자 admin 및 시리얼에 출력된 별도 비밀번호를 입력합니다.
 5. 네트워크 설정에서 공유기 정보를 입력합니다. 비밀번호 공란은 기존 값 유지입니다. AP 설정 변경은 응답 후 약 750ms 뒤 적용합니다.
+6. 시스템 탭의 HTTP 관리자 비밀번호 변경에서 현재 비밀번호와 새 비밀번호를 입력합니다. 새 비밀번호는 공백 없는 ASCII 4~32자이며, 저장 후 `admin`과 새 비밀번호로 다시 로그인합니다.
 
 ## 정책 및 제한
 - GPIO0 Active Low. 부트로더 구간 안전은 보장하지 않습니다. 인칭 활성/비활성 전환 시 OFF, 실행 중 시간 변경은 다음 ON부터 적용. RESTORE 상태는 2초 지연 저장하므로 갑작스러운 전원 차단 시 오차가 있습니다.
 - Wi-Fi 검색은 비동기이며 첫 요청은 빈 배열을 반환할 수 있습니다. 잠시 뒤 기존 검색 버튼을 다시 누르면 캐시된 결과를 반환합니다(30초 캐시, 최대 24개).
 - AP 비활성화는 STA 연결 중에만 적용하며 연결이 끊기면 AP를 다시 시작합니다. STA 연결 성공 자체가 관리 접근 가능성을 보장하지는 않습니다.
-- 관리자 인증은 별도 무작위 비밀번호를 내부 config에 저장하는 Basic 방식입니다. 명세의 passwordHash 방식 및 인증 설정 UI는 미구현입니다. HTTP는 암호화되지 않으며 시리얼에도 비밀번호가 출력됩니다. 신뢰 가능한 내부망에서만 사용하십시오.
+- 관리자 인증은 내부 설정에 비밀번호를 저장하는 HTTP Basic 방식입니다. 웹에서 변경하려면 현재 비밀번호를 입력해야 합니다. HTTP는 암호화되지 않으며 시리얼에도 비밀번호가 출력됩니다. 신뢰 가능한 내부망에서만 사용하십시오.
 - JSON 본문 16KB 상한, 파싱 용량 6KB(문서별), 일부 API는 더 작습니다. ESP8266WebServer가 본문을 먼저 수신하므로 네트워크 수준의 메모리 제한은 아닙니다. Origin 및 Fetch Metadata, JSON Content-Type 검사를 적용했지만 보안 시험은 미수행입니다.
 - LittleFS 자동 포맷 금지. 파일 누락 또는 마운트 실패 시 안전 모드(ON 거부) 및 최소 복구 페이지. 복구는 UART 업로드를 사용합니다. 설정 초기화는 웹 파일을 유지합니다.
 - 설정 스키마 v1만 지원하며 이전 autoOff 설정 마이그레이션은 미구현입니다. 확장 toggle/connect/disconnect API는 미구현입니다.

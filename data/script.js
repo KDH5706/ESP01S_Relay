@@ -36,7 +36,7 @@ async function api(path, method = 'GET', body) {
     });
 
     if (!r.ok) {
-      throw Error('HTTP ' + r.status);
+      throw Object.assign(Error('HTTP ' + r.status), { status: r.status });
     }
 
     const data = await r.json();
@@ -253,7 +253,7 @@ setInterval(() => {
 
 
 // 공통 작업 처리
-async function action(fn) {
+async function action(fn, refresh = true) {
   if (busy || !online) {
     return;
   }
@@ -271,7 +271,9 @@ async function action(fn) {
 
     controls();
 
-    await poll();
+    if (refresh) {
+      await poll();
+    }
   }
 }
 
@@ -717,6 +719,44 @@ $('saveName').onclick = () => action(() => save({
     name: $('deviceName').value
   }
 }));
+
+
+// HTTP 관리자 비밀번호 변경
+$('adminPasswordForm').onsubmit = event => {
+  event.preventDefault();
+
+  const form = event.currentTarget,
+    currentPassword = $('currentAdminPassword').value,
+    newPassword = $('newAdminPassword').value;
+
+  if (!/^[!-~]{4,32}$/.test(newPassword)) {
+    return notify('새 비밀번호는 공백 없이 영문, 숫자, 기호를 사용해 4~32자로 입력하세요.');
+  }
+
+  if (newPassword !== $('confirmAdminPassword').value) {
+    return notify('새 비밀번호와 확인 값이 일치하지 않습니다.');
+  }
+
+  if (newPassword === currentPassword) {
+    return notify('현재 비밀번호와 다른 값을 입력하세요.');
+  }
+
+  action(async () => {
+    try {
+      await api('/system/admin-password', 'PUT', { currentPassword, newPassword });
+    } catch (e) {
+      if (e.status === 422) {
+        $('currentAdminPassword').value = '';
+        $('currentAdminPassword').focus();
+        return notify('현재 HTTP 관리자 비밀번호가 올바르지 않습니다.');
+      }
+      throw e;
+    }
+
+    form.reset();
+    window.location.reload();
+  }, false);
+};
 
 
 // 설정 백업

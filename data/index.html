@@ -267,6 +267,32 @@
           </button>
         </div>
       </article>
+
+      <article>
+        <h2>HTTP 관리자 비밀번호 변경</h2>
+
+        <form id="adminPasswordForm" class="stack" method="post">
+          <label>
+            현재 HTTP 관리자 비밀번호
+            <input id="currentAdminPassword" type="password" autocomplete="current-password" required>
+          </label>
+
+          <label>
+            새 비밀번호
+            <input id="newAdminPassword" type="password" autocomplete="new-password"
+                   minlength="4" maxlength="32" aria-describedby="adminPasswordHint" required>
+          </label>
+
+          <label>
+            새 비밀번호 확인
+            <input id="confirmAdminPassword" type="password" autocomplete="new-password"
+                   minlength="4" maxlength="32" required>
+          </label>
+
+          <small id="adminPasswordHint">공백 없이 영문, 숫자, 기호를 사용해 4~32자로 입력하세요. 변경 후 admin으로 다시 로그인합니다.</small>
+          <button type="submit" disabled>비밀번호 변경</button>
+        </form>
+      </article>
     </section>
   </main>
 
